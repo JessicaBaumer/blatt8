@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <cstdint>
+#include <iostream>
 
 class Image
 {
@@ -13,51 +14,65 @@ public:
   typedef uint16_t PixelType;
 
 private:
-  int width_;
-  int height_;
-  std::vector<PixelType> data_;
+  int _width;
+  int _height;
+  std::vector<PixelType> _data;
 
 public:
   // Standardkonstruktor: initialisiere Bild mit Groesse (0,0)
   Image()
-    : // IHR CODE HIER
-  {}
+    : _width(0), _height(0)// IHR CODE HIER
+  {_data.push_back(0);}
 
   // Konstruktor: initialisiere Bild mit Groesse (width, height)
   // Alle Pixel sollen danach den Wert '0' haben.
   Image(unsigned int width, unsigned int height)
-    : // IHR CODE HIER
-  {}
+    : _width(width), _height(height)
+  {
+  	for(int i = 0; i <= width*height; i++)
+  	{
+  		_data.push_back(0);
+  	}
+  }
 
   // Breite abfragen
-  int width() const {
-    // IHR CODE HIER
+  int width() const 
+  {
+    return _width;
   }
 
   // Hoehe abfragen
-  int height() const {
-    // IHR CODE HIER
+  int height() const 
+  {
+    return _height;
   }
 
   // Gesamtzahl der Pixel abfragen
-  int size() const {
-    // IHR CODE HIER
+  int size() const 
+  {
+    return _width * _height;
   }
 
   // Groesse der Bildes aendern. Welche Methode der Klasse vector
   // ist hier sinnvoll?
-  void resize(unsigned int new_width, unsigned int new_height) {
-    // IHR CODE HIER
+  void resize(unsigned int new_width, unsigned int new_height) 
+  {
+    _width = new_width;
+    _height = new_height;
+
+    _data.resize(new_width * new_height);
   }
 
   // lesender Zugriff auf des Pixel an Position (x,y)
-  PixelType operator()(int x, int y) const {
-    // IHR CODE HIER
+  PixelType operator()(int x, int y) const 
+  { 
+    return _data.at((_height * (y-1))+x);		// IHR CODE HIER
   }
 
   // Lese/Schreib-Zugriff auf des Pixel an Position (x,y)
-  PixelType & operator()(int x, int y) {
-    // IHR CODE HIER
+  PixelType & operator()(int x, int y) 
+  {
+    return _data.at((_height * (y-1))+x);		// IHR CODE HIER
   }
 };
 
@@ -66,20 +81,43 @@ public:
 // Dies ist der Fall, wenn die Bildgroessen uebereinstimmen und
 // alle Pixel die gleichen Werte haben.
 // Diese Funktion ist nuetzlich zum Testen der Bildklasse.
-bool operator==(Image const & im0, Image const & im1) {
-  // IHR CODE HIER
+bool operator==(Image const & im0, Image const & im1) 
+{
+  if ( !(im0.width() == im1.width() || !(im0.height() == im1.height()) ) )		// IHR CODE HIER
+  {
+  	return false;
+  }
+  for (int i = 0; i < im0.width(); i++)
+  {
+  	for (int k = 0; i < im0.height(); k++)
+  	{
+  		if (!(im0(i,k) == im1(i,k))) return false;
+  	}
+  }	
+  return true;		
 }
 
 // Wandle die Pixelwerte zeilenweise in einen String.
 // Fuer ein Bild der Groesse 4x3, das die Pixelwerte 0 und 1
 // in Schachbrett-Anordnung enthaelt, soll z.B. der String
-//         "0 1 0 1\n1 0 1 0\n0 1 0 1\n"
+//         "0 1 0 1\n
+//			1 0 1 0\n
+//			0 1 0 1\n"
 // zurueckgegeben werden (Pixelwerte sind durch Leerzeichen
 // getrennt, am Ende jeder Zeile steht ein Enter-Zeichen '\n').
 // Finden Sie heraus, welche Methode der C++-Standardbibliothek
 // eine Variable vom Typ int in einen String umwandelt.
-std::string to_string(Image const & im) {
+std::string to_string(Image const & im) 
+{
   std::string res;
+  for (int h = 0; h < im.height(); h++)
+  {
+  	for (int w = 0; w < im.width(); w++)
+  	{
+  		res.append(std::to_string(im(w,h)));
+  	}
+  	res.append("\n");
+  }
   // IHR CODE HIER
   return res;
 }
@@ -93,12 +131,14 @@ std::string to_string(Image const & im) {
 //
 // Da das PGM-Format ein Textformat ist, kann man es zum
 // Debuggen auch im Editor oeffnen und ueberpruefen.
-void writePGM(Image const & img, std::string const & filename) {
+void writePGM(Image const & img, std::string const & filename) 
+{
   // Filestream erzeugen
   std::ofstream pgm(filename, std::ios::binary);
 
   // Fehlermeldung, wenn sich das File nicht oeffnen laesst.
-  if (!pgm) {
+  if (!pgm) 
+  {
     throw std::runtime_error("writePGM(): cannot open file '" + filename + "'.");
   }
 
@@ -113,13 +153,15 @@ void writePGM(Image const & img, std::string const & filename) {
 }
 
 // Gib 'true' zurueck, wenn das File 'filename' das PGM-Format hat.
-bool checkPGM(std::string const & filename) {
+bool checkPGM(std::string const & filename) 
+{
   std::ifstream pgm(filename);
   std::string line;
 
   // Teste, ob das File geoeffnet werden kann und
   // mindestens eine Zeile hat.
-  if (!std::getline(pgm, line)) {
+  if (!std::getline(pgm, line)) 
+  {
     return false;
   }
 
@@ -129,10 +171,12 @@ bool checkPGM(std::string const & filename) {
 
 // Lese das File 'filename' (im PGM-Format) ein und gib das resultierende
 // Bild zurueck.
-Image readPGM(std::string const & filename) {
+Image readPGM(std::string const & filename) 
+{
   // Fehlermeldung, wenn sich das File nicht oeffnen laesst
   // oder kein PGM-File ist.
-  if (!checkPGM(filename)) {
+  if (!checkPGM(filename)) 
+  {
     throw std::runtime_error("readPGM(): File '" + filename + "' is not PGM.");
   }
 
@@ -144,7 +188,8 @@ Image readPGM(std::string const & filename) {
   std::getline(pgm, line);
 
   // eventuelle Kommentarzeilen ueberspringen
-  while (pgm.peek() == '#') {
+  while (pgm.peek() == '#') 
+  {
     std::getline(pgm, line);
   }
 
@@ -155,7 +200,8 @@ Image readPGM(std::string const & filename) {
   // maximalen Grauwert einlesen und Fehlermeldung ausgeben, falls zu gross
   int max_value;
   pgm >> max_value;
-  if (max_value > 255) {
+  if (max_value > 255) 
+  {
     throw std::runtime_error("readPGM(): max value must be <= 255.");
   }
 
@@ -166,8 +212,16 @@ Image readPGM(std::string const & filename) {
   // die Zeilen und Spalten einlesen.
 
   // IHR CODE HIER
+  for (int h = 0; h < res.height(); h++)
+  {
+  	for (int w = 0; w < res.width(); w++)
+  	{
+  		Image::PixelType cache;
+  		pgm >> cache;
 
-  return res;
+  		res(h,w) = cache;
+  	}
+  }
 }
 
 #endif // IMAGE_H
