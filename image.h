@@ -21,7 +21,7 @@ private:
 public:
   // Standardkonstruktor: initialisiere Bild mit Groesse (0,0)
   Image()
-    : _width(0), _height(0)// IHR CODE HIER
+    : _width(0), _height(0)
   {_data.push_back(0);}
 
   // Konstruktor: initialisiere Bild mit Groesse (width, height)
@@ -66,13 +66,15 @@ public:
   // lesender Zugriff auf des Pixel an Position (x,y)
   PixelType operator()(int x, int y) const 
   { 
-    return _data.at((_height * (y-1))+x);		// IHR CODE HIER
+    if (y < 1) return _data.at(x);
+    return _data.at(((_width * (y-1))+x));
   }
 
   // Lese/Schreib-Zugriff auf des Pixel an Position (x,y)
   PixelType & operator()(int x, int y) 
   {
-    return _data.at((_height * (y-1))+x);		// IHR CODE HIER
+    if (y < 1) return _data.at(x);
+    return _data.at(((_width * (y-1))+x));			
   }
 };
 
@@ -83,7 +85,7 @@ public:
 // Diese Funktion ist nuetzlich zum Testen der Bildklasse.
 bool operator==(Image const & im0, Image const & im1) 
 {
-  if ( !(im0.width() == im1.width() || !(im0.height() == im1.height()) ) )		// IHR CODE HIER
+  if ( !(im0.width() == im1.width() || !(im0.height() == im1.height()) ) )
   {
   	return false;
   }
@@ -115,6 +117,7 @@ std::string to_string(Image const & im)
   	for (int w = 0; w < im.width(); w++)
   	{
   		res.append(std::to_string(im(w,h)));
+  		res.append(" ");
   	}
   	res.append("\n");
   }
@@ -211,17 +214,16 @@ Image readPGM(std::string const & filename)
   // Pixeldaten in einer zweifach geschachtelten Schleife ueber
   // die Zeilen und Spalten einlesen.
 
-  // IHR CODE HIER
   for (int h = 0; h < res.height(); h++)
   {
   	for (int w = 0; w < res.width(); w++)
   	{
   		Image::PixelType cache;
   		pgm >> cache;
-
   		res(h,w) = cache;
   	}
   }
+  return res;
 }
 
 #endif // IMAGE_H
