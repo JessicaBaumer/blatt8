@@ -14,8 +14,8 @@ public:
   typedef uint16_t PixelType;
 
 private:
-  int _width;
-  int _height;
+  unsigned int _width;
+  unsigned int _height;
   std::vector<PixelType> _data;
 
 public:
@@ -24,33 +24,40 @@ public:
     : _width(0), _height(0)
   {_data.push_back(0);}
 
+
   // Konstruktor: initialisiere Bild mit Groesse (width, height)
   // Alle Pixel sollen danach den Wert '0' haben.
   Image(unsigned int width, unsigned int height)
     : _width(width), _height(height)
   {
-  	for(int i = 0; i <= width*height; i++)
-  	{
-  		_data.push_back(0);
-  	}
+    for(unsigned int i = 0; i <= _width*_height; i++)
+    {
+      _data.push_back(0);
+    }
   }
 
   // Breite abfragen
-  int width() const 
+  unsigned int width() const 
   {
     return _width;
   }
 
   // Hoehe abfragen
-  int height() const 
+  unsigned int height() const 
   {
     return _height;
   }
 
   // Gesamtzahl der Pixel abfragen
-  int size() const 
+  unsigned int size() const 
   {
     return _width * _height;
+  }
+
+  unsigned int getPlace(int x, int y)
+  {
+    if ( y < 1 ) return x; 
+    return (_width*y+x);
   }
 
   // Groesse der Bildes aendern. Welche Methode der Klasse vector
@@ -59,22 +66,21 @@ public:
   {
     _width = new_width;
     _height = new_height;
-
-    _data.resize(new_width * new_height);
+    _data.resize(new_height*new_width);  
   }
 
   // lesender Zugriff auf des Pixel an Position (x,y)
   PixelType operator()(int x, int y) const 
   { 
-    if (y < 1) return _data.at(x);
-    return _data.at(((_width * (y-1))+x));
+    //if (y < 1) return _data.at(x);
+    return _data.at(((_width * y)+x));
   }
 
   // Lese/Schreib-Zugriff auf des Pixel an Position (x,y)
   PixelType & operator()(int x, int y) 
   {
-    if (y < 1) return _data.at(x);
-    return _data.at(((_width * (y-1))+x));			
+    //if (y < 1) return _data.at(x);
+    return _data.at(((_width * y)+x));			
   }
 };
 
@@ -83,20 +89,20 @@ public:
 // Dies ist der Fall, wenn die Bildgroessen uebereinstimmen und
 // alle Pixel die gleichen Werte haben.
 // Diese Funktion ist nuetzlich zum Testen der Bildklasse.
-bool operator==(Image const & im0, Image const & im1) 
+bool operator==(Image const & im0, Image const & im1)
 {
-  if ( !(im0.width() == im1.width() || !(im0.height() == im1.height()) ) )
+  if ( !(im0.width() == im1.width()) || !(im0.height() == im1.height()) )
   {
-  	return false;
+    return false;
   }
-  for (int i = 0; i < im0.width(); i++)
+  for (unsigned int w = 0; w < im0.width(); w++)
   {
-  	for (int k = 0; i < im0.height(); k++)
-  	{
-  		if (!(im0(i,k) == im1(i,k))) return false;
-  	}
-  }	
-  return true;		
+    for (unsigned int h = 0; h < im0.height(); h++)
+    {
+      if ( !(im0(w,h) == im1(w,h)) ) return false; 
+    }
+  }
+  return true;
 }
 
 // Wandle die Pixelwerte zeilenweise in einen String.
@@ -112,16 +118,15 @@ bool operator==(Image const & im0, Image const & im1)
 std::string to_string(Image const & im) 
 {
   std::string res;
-  for (int h = 0; h < im.height(); h++)
+  for (unsigned int h = 0; h < im.height(); h++)
   {
-  	for (int w = 0; w < im.width(); w++)
-  	{
-  		res.append(std::to_string(im(w,h)));
-  		res.append(" ");
-  	}
-  	res.append("\n");
+    for (unsigned int w = 0; w < im.width(); w++)
+    {
+      res.append(std::to_string(im(w,h)));
+      res.append(" ");
+    }
+    res.append("\n");
   }
-  // IHR CODE HIER
   return res;
 }
 
@@ -214,14 +219,14 @@ Image readPGM(std::string const & filename)
   // Pixeldaten in einer zweifach geschachtelten Schleife ueber
   // die Zeilen und Spalten einlesen.
 
-  for (int h = 0; h < res.height(); h++)
+  for (unsigned int h = 0; h < res.height(); h++)
   {
-  	for (int w = 0; w < res.width(); w++)
-  	{
-  		Image::PixelType cache;
-  		pgm >> cache;
-  		res(h,w) = cache;
-  	}
+    for (unsigned int w = 0; w < res.width(); w++)
+    {
+      Image::PixelType cache;
+      pgm >> cache;
+      res(w,h) = cache;
+    }
   }
   return res;
 }
